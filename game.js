@@ -34,6 +34,20 @@ document.onreadystatechange = function () {
             speed: 200,
             defaultFrame: 1
         });
+
+        var enemyLayer = game.createLayer('enemies');
+        var enemy = enemyLayer.createEntity();
+        enemy.pos = { x: 250, y: 250 };
+        enemy.velocity = { x: 100, y: 100 };
+        enemy.size = { width: 40, height: 40 };
+        enemy.asset = new PixelJS.AnimatedSprite();
+        enemy.asset.prepare({
+            name: 'pixil-frame-0.png',
+            frames: 1,
+            rows: 1,
+            speed: 80,
+            defaultFrame: 0
+        });
         
         var itemLayer = game.createLayer('items');
         var coin = itemLayer.createEntity();
@@ -74,12 +88,22 @@ document.onreadystatechange = function () {
         
         playerLayer.registerCollidable(player);
         itemLayer.registerCollidable(coin);
+        enemyLayer.registerCollidable(enemy);
         
         var score = 0;
         var scoreLayer = game.createLayer("score");
         scoreLayer.static = true;
         
         game.loadAndRun(function (elapsedTime, dt) {
+            enemy.pos.x += enemy.velocity.x * dt;
+            enemy.pos.y += enemy.velocity.y * dt;
+
+            if (enemy.pos.x <= -120 || enemy.pos.x >= 660) {
+                enemy.velocity.x = -enemy.velocity.x;
+            }
+            if (enemy.pos.y <= -120 || enemy.pos.y >= 450) {
+                enemy.velocity.y = -enemy.velocity.y;
+            }
         });
     }
 }
