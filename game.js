@@ -24,7 +24,7 @@ document.onreadystatechange = function () {
         var player = new PixelJS.Player();
         player.addToLayer(playerLayer);
         player.pos = { x: 200, y: 300 };
-        player.size = { width: 16, height: 16 };
+        player.size = { width: 10, height: 10 };
         player.velocity = { x: 200, y: 200 };
         player.asset = new PixelJS.AnimatedSprite();
         player.asset.prepare({ 
@@ -35,7 +35,9 @@ document.onreadystatechange = function () {
             defaultFrame: 1
         });
 
+        var enemies = []
         var enemyLayer = game.createLayer('enemies');
+        enemyLayer.redraw = true;
         var enemy = enemyLayer.createEntity();
         enemy.pos = { x: 250, y: 250 };
         enemy.velocity = { x: 100, y: 100 };
@@ -48,7 +50,34 @@ document.onreadystatechange = function () {
             speed: 80,
             defaultFrame: 0
         });
+        enemies.push(enemy);
+
+        function tryNewEnemy() {
+            var newEnemy = enemyLayer.createEntity()
+            newEnemy.pos = { x: 250, y: 250 };
+            newEnemy.velocity = { x: -100, y: -100 };
+            newEnemy.size = { width: 40, height: 40 };
+            newEnemy.asset = new PixelJS.AnimatedSprite();
+            newEnemy.asset.prepare({
+                name: 'pixil-frame-0.png',
+                frames: 1,
+                rows: 1,
+                speed: 80,
+                defaultFrame: 0
+            });    
+            enemyLayer.registerCollidable(newEnemy);
+            enemies.push(newEnemy);
+            enemyLayer.redraw = true; // Added here to force redraw
+            newEnemy.visible = true;
+        }    
         
+        tryNewEnemy();
+
+        setInterval(tryNewEnemy, 1000);
+
+        console.log("actually im here");
+
+
         var itemLayer = game.createLayer('items');
         var coin = itemLayer.createEntity();
         coin.pos = { x: 400, y: 150 };
@@ -93,17 +122,31 @@ document.onreadystatechange = function () {
         var score = 0;
         var scoreLayer = game.createLayer("score");
         scoreLayer.static = true;
+
+        enemyLayer.redraw = true;
         
         game.loadAndRun(function (elapsedTime, dt) {
-            enemy.pos.x += enemy.velocity.x * dt;
-            enemy.pos.y += enemy.velocity.y * dt;
 
-            if (enemy.pos.x <= -120 || enemy.pos.x >= 660) {
-                enemy.velocity.x = -enemy.velocity.x;
-            }
-            if (enemy.pos.y <= -120 || enemy.pos.y >= 450) {
-                enemy.velocity.y = -enemy.velocity.y;
-            }
+            enemyLayer.redraw = true;
+            enemyLayer.visible = true;
+
+            enemies.forEach(function(enemy) {
+                enemy.visible = true;
+                console.log(`Enemy position: ${enemy.pos.x}, ${enemy.pos.y}`);
+                enemy.pos.x += enemy.velocity.x * dt;
+                enemy.pos.y += enemy.velocity.y * dt;
+                if (enemy.pos.x <= -120 || enemy.pos.x >= 650) {
+                    enemy.velocity.x = -enemy.velocity.x;
+                }
+                if (enemy.pos.y <= -120 || enemy.pos.y >= 450) {
+                    enemy.velocity.y = -enemy.velocity.y;
+                }
+                enemyLayer.draw();
+            });
+
+            enemyLayer.draw();
+
+            console.log("nope here");
         });
     }
 }
