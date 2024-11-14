@@ -83,6 +83,8 @@ document.onreadystatechange = function () {
                     '#FFFFFF',
                     'left'
                 );
+            } else if (entity === enemy) {
+                console.log("game over");
             }
         });
         
@@ -95,15 +97,31 @@ document.onreadystatechange = function () {
         scoreLayer.static = true;
         
         game.loadAndRun(function (elapsedTime, dt) {
-            enemy.pos.x += enemy.velocity.x * dt;
-            enemy.pos.y += enemy.velocity.y * dt;
+            var chaseSpeed = 100;  // Set the speed at which the enemy moves toward the player
+        
+            // Calculate direction vector from enemy to player
+            var dx = player.pos.x - enemy.pos.x - 120;
+            var dy = player.pos.y - enemy.pos.y - 105;
+        
+            // Calculate the length of the direction vector
+            var distance = Math.sqrt(dx * dx + dy * dy);
+        
+            // Normalize the direction vector (divide by the distance to get a unit vector)
+            if (distance > 0) {
+                dx /= distance;
+                dy /= distance;
+            }
+        
+            // Apply the speed to the normalized direction and update the enemy's position
+            enemy.pos.x += dx * chaseSpeed * dt;
+            enemy.pos.y += dy * chaseSpeed * dt;
+        
+            // Optional: Log position (or use it for debugging purposes)
+            // console.log(enemy.pos.x, enemy.pos.y);
 
-            if (enemy.pos.x <= -120 || enemy.pos.x >= 660) {
-                enemy.velocity.x = -enemy.velocity.x;
-            }
-            if (enemy.pos.y <= -120 || enemy.pos.y >= 450) {
-                enemy.velocity.y = -enemy.velocity.y;
-            }
+            
+        
         });
+        
     }
 }
