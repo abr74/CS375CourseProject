@@ -34,19 +34,20 @@ document.onreadystatechange = function () {
             speed: 200,
             defaultFrame: 1
         });
+        
 
         var enemyLayer = game.createLayer('enemies');
-        var enemy = enemyLayer.createEntity();
-        enemy.pos = { x: 250, y: 250 };
+        var enemy = playerLayer.createEntity();
+        enemy.pos = { x: 200, y: 200 };
         enemy.velocity = { x: 100, y: 100 };
-        enemy.size = { width: 40, height: 40 };
+        enemy.size = { width: 16, height: 16 };
         enemy.asset = new PixelJS.AnimatedSprite();
         enemy.asset.prepare({
             name: 'pixil-frame-0.png',
             frames: 1,
             rows: 1,
             speed: 80,
-            defaultFrame: 0
+            defaultFrame: 1
         });
         
         var itemLayer = game.createLayer('items');
@@ -83,12 +84,14 @@ document.onreadystatechange = function () {
                     '#FFFFFF',
                     'left'
                 );
-            } else if (entity === enemy) {
-                console.log("game over");
-            }
+            } 
+            // else if (entity === enemy) {
+            //     console.log("game over");
+            // }
         });
         
         playerLayer.registerCollidable(player);
+        playerLayer.registerCollidable(enemy);
         itemLayer.registerCollidable(coin);
         enemyLayer.registerCollidable(enemy);
         
@@ -100,8 +103,8 @@ document.onreadystatechange = function () {
             var chaseSpeed = 100;  // Set the speed at which the enemy moves toward the player
         
             // Calculate direction vector from enemy to player
-            var dx = player.pos.x - enemy.pos.x - 120;
-            var dy = player.pos.y - enemy.pos.y - 105;
+            var dx = player.pos.x - enemy.pos.x// - 120;
+            var dy = player.pos.y - enemy.pos.y// - 105;
         
             // Calculate the length of the direction vector
             var distance = Math.sqrt(dx * dx + dy * dy);
