@@ -23,6 +23,7 @@ document.onreadystatechange = function () {
         var playerLayer = game.createLayer('players');
         var player = new PixelJS.Player();
         player.addToLayer(playerLayer);
+        //console.log(player.layer);
         player.pos = { x: 200, y: 300 };
         player.size = { width: 10, height: 10 };
         player.velocity = { x: 200, y: 200 };
@@ -35,28 +36,15 @@ document.onreadystatechange = function () {
             defaultFrame: 1
         });
 
-        var enemies = []
+
         var enemyLayer = game.createLayer('enemies');
-        enemyLayer.redraw = true;
-        var enemy = enemyLayer.createEntity();
-        enemy.pos = { x: 250, y: 250 };
-        enemy.velocity = { x: 100, y: 100 };
-        enemy.size = { width: 40, height: 40 };
-        enemy.asset = new PixelJS.AnimatedSprite();
-        enemy.asset.prepare({
-            name: 'pixil-frame-0.png',
-            frames: 1,
-            rows: 1,
-            speed: 80,
-            defaultFrame: 0
-        });
-        enemies.push(enemy);
+        var enemies = []
 
         function tryNewEnemy() {
-            var newEnemy = enemyLayer.createEntity()
+            var newEnemy = enemyLayer.createEntity();
             newEnemy.pos = { x: 250, y: 250 };
-            newEnemy.velocity = { x: -100, y: -100 };
-            newEnemy.size = { width: 40, height: 40 };
+            newEnemy.velocity = { x: 100, y: 100 };
+            newEnemy.size = { width: 16, height: 16 };
             newEnemy.asset = new PixelJS.AnimatedSprite();
             newEnemy.asset.prepare({
                 name: 'pixil-frame-0.png',
@@ -65,15 +53,16 @@ document.onreadystatechange = function () {
                 speed: 80,
                 defaultFrame: 0
             });    
-            enemyLayer.registerCollidable(newEnemy);
             enemies.push(newEnemy);
-            enemyLayer.redraw = true; // Added here to force redraw
+            newEnemy.addToLayer(enemyLayer);
+            enemyLayer.redraw = true; 
             newEnemy.visible = true;
+            enemyLayer.registerCollidable(newEnemy);
         }    
         
         tryNewEnemy();
 
-        setInterval(tryNewEnemy, 1000);
+        setInterval(tryNewEnemy, 2000);
 
         console.log("actually im here");
 
@@ -117,7 +106,6 @@ document.onreadystatechange = function () {
         
         playerLayer.registerCollidable(player);
         itemLayer.registerCollidable(coin);
-        enemyLayer.registerCollidable(enemy);
         
         var score = 0;
         var scoreLayer = game.createLayer("score");
@@ -133,6 +121,7 @@ document.onreadystatechange = function () {
             enemies.forEach(function(enemy) {
                 enemy.visible = true;
                 console.log(`Enemy position: ${enemy.pos.x}, ${enemy.pos.y}`);
+                console.log(enemy.layer);
                 enemy.pos.x += enemy.velocity.x * dt;
                 enemy.pos.y += enemy.velocity.y * dt;
                 if (enemy.pos.x <= -120 || enemy.pos.x >= 650) {
