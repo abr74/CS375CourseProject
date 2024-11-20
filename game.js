@@ -85,9 +85,9 @@ document.onreadystatechange = function () {
                     'left'
                 );
             } 
-            // else if (entity === enemy) {
-            //     console.log("game over");
-            // }
+            else if (entity === enemy) {
+                console.log("game over");
+            }
         });
         
         playerLayer.registerCollidable(player);
