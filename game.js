@@ -59,6 +59,58 @@ document.onreadystatechange = function () {
             speed: 100,
             defaultFrame: 1
         });
+
+        var enemyLayer = game.createLayer('enemies');
+        var enemies = [];
+        var maxEnemies = 5;
+        var enemySpawnInterval = 10000;
+        var releaseInterval = 5000;
+        var releasedEnemiesCount = 0;
+
+        function createEnemy(x, y) {
+            var newEnemy = enemyLayer.createEntity();
+            newEnemy.pos = { x: x, y: y };
+            newEnemy.velocity = { x: 0, y: 0 };
+            newEnemy.size = { width: 16, height: 16 };
+            newEnemy.asset = new PixelJS.AnimatedSprite();
+            newEnemy.asset.prepare({
+                name: 'pixil-frame-0.png',
+                frames: 1,
+                rows: 1,
+                speed: 80,
+                defaultFrame: 0
+            });    
+            enemies.push(newEnemy);
+            newEnemy.addToLayer(enemyLayer);
+            enemyLayer.redraw = true; 
+            newEnemy.visible = true;
+            enemyLayer.registerCollidable(newEnemy);
+        }
+
+        createEnemy(-155, 100);
+        createEnemy(-155, 200);
+        createEnemy(-155, 300);
+
+        var releaseEnemyInterval = setInterval(function() {
+            if (releasedEnemiesCount < enemies.length) {
+                enemies[releasedEnemiesCount].velocity = { x: 100, y: 100 };
+                releasedEnemiesCount++;
+            } else {
+                clearInterval(releaseEnemyInterval);
+            }
+        }, releaseInterval);
+
+        setInterval(function() {
+            if (enemies.length < maxEnemies) {
+                createEnemy(
+                    Math.floor(Math.random() * (800 - 16)),
+                    Math.floor(Math.random() * (600 - 16))
+                );
+            }
+        }, enemySpawnInterval);
+
+        console.log("actually im here");
+
         
         var itemLayer = game.createLayer('items');
         var coin = itemLayer.createEntity();
@@ -86,7 +138,7 @@ document.onreadystatechange = function () {
         speedBoost.size = { width: 16, height: 16 };
         speedBoost.asset = new PixelJS.AnimatedSprite();
         speedBoost.asset.prepare({
-            name: 'coin.png',
+            name: 'speedboost.png',
             frames: 8,
             rows: 1,
             speed: 80,
@@ -106,23 +158,14 @@ document.onreadystatechange = function () {
                 };
                 
                 score += 1;
-                scoreLayer.redraw = true;
-                scoreLayer.drawText(
-                    'Coins: ' + score, 
-                    50, 
-                    50, 
-                    '14pt "Trebuchet MS", Helvetica, sans-serif', 
-                    '#FFFFFF',
-                    'left'
-                );
             } else if (entity === speedBoost) {
                 powerupSound.play();
 
                 var originalVelocityX = player.velocity.x;
                 var originalVelocityY = player.velocity.y;
                 
-                player.velocity.x == 200;
-                player.velocity.y *= 2;
+                player.velocity.x = 200;
+                player.velocity.y = 200;
                 
                 isSpeedBoosted = true;
                 speedBoostTimer = 10;  
@@ -137,8 +180,8 @@ document.onreadystatechange = function () {
                     player.velocity.y = originalVelocityY;
                     isSpeedBoosted = false;
                     speedBoostTimer = 0;
-                }, 10000);
 
+                }, 10000);
             }
         });
         
@@ -152,7 +195,39 @@ document.onreadystatechange = function () {
         var scoreLayer = game.createLayer("score");
         scoreLayer.static = true;
         
+        enemyLayer.redraw = true;
+
+        
         game.loadAndRun(function (elapsedTime, dt) {
+            enemies.forEach(function(enemy) {
+                enemy.visible = true;
+                console.log(`Enemy position: ${enemy.pos.x}, ${enemy.pos.y}`);
+                console.log(enemy.layer);
+                enemy.pos.x += enemy.velocity.x * dt;
+                enemy.pos.y += enemy.velocity.y * dt;
+                if (enemy.pos.x <= -160 || enemy.pos.x >= 650) {
+                    enemy.velocity.x = -enemy.velocity.x;
+                }
+                if (enemy.pos.y <= -160 || enemy.pos.y >= 450) {
+                    enemy.velocity.y = -enemy.velocity.y;
+                }
+                enemyLayer.draw();
+            });
+
+            enemyLayer.draw();
+
+            console.log("nope here");
+            
+            scoreLayer.redraw = true;
+            scoreLayer.drawText(
+                'Coins: ' + score, 
+                50, 
+                50, 
+                '14pt "Trebuchet MS", Helvetica, sans-serif', 
+                '#FFFFFF',
+                'left'
+            );
+
             if (isSpeedBoosted) {
                 speedBoostTimer -= dt;  
                 
