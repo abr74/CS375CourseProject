@@ -23,47 +23,54 @@ document.onreadystatechange = function () {
         var playerLayer = game.createLayer('players');
         var player = new PixelJS.Player();
         player.addToLayer(playerLayer);
+        //console.log(player.layer);
         player.pos = { x: 200, y: 300 };
-        player.size = { width: 32, height: 32 };
-        player.velocity = { x: 100, y: 100 };
-
-        player.moveLeft = function() {
-            if (this.canMoveLeft && this.pos.x > 0) {
-                this.pos.x -= this.velocity.x * this.layer.engine._deltaTime;
-            }
-        };
-
-        player.moveRight = function() {
-            if (this.canMoveRight && this.pos.x + this.size.width < 800) {
-                this.pos.x += this.velocity.x * this.layer.engine._deltaTime;
-            }
-        };
-
-        player.moveUp = function() {
-            if (this.canMoveUp && this.pos.y > 0) {
-                this.pos.y -= this.velocity.y * this.layer.engine._deltaTime;
-            }
-        };
-
-        player.moveDown = function() {
-            if (this.canMoveDown && this.pos.y + this.size.height < 600) {
-                this.pos.y += this.velocity.y * this.layer.engine._deltaTime;
-            }
-        };
-
+        player.size = { width: 10, height: 10 };
+        player.velocity = { x: 200, y: 200 };
         player.asset = new PixelJS.AnimatedSprite();
         player.asset.prepare({ 
             name: 'char.png', 
             frames: 3, 
             rows: 4,
-            speed: 100,
+            speed: 200,
             defaultFrame: 1
         });
+
+
+        var enemyLayer = game.createLayer('enemies');
+        var enemies = []
+
+        function tryNewEnemy() {
+            var newEnemy = enemyLayer.createEntity();
+            newEnemy.pos = { x: 250, y: 250 };
+            newEnemy.velocity = { x: 100, y: 100 };
+            newEnemy.size = { width: 16, height: 16 };
+            newEnemy.asset = new PixelJS.AnimatedSprite();
+            newEnemy.asset.prepare({
+                name: 'pixil-frame-0.png',
+                frames: 1,
+                rows: 1,
+                speed: 80,
+                defaultFrame: 0
+            });    
+            enemies.push(newEnemy);
+            newEnemy.addToLayer(enemyLayer);
+            enemyLayer.redraw = true; 
+            newEnemy.visible = true;
+            enemyLayer.registerCollidable(newEnemy);
+        }    
         
+        tryNewEnemy();
+
+        setInterval(tryNewEnemy, 2000);
+
+        console.log("actually im here");
+
+
         var itemLayer = game.createLayer('items');
         var coin = itemLayer.createEntity();
         coin.pos = { x: 400, y: 150 };
-        coin.size = { width: 16, height: 16 };
+        coin.size = { width: 12, height: 16 };
         coin.asset = new PixelJS.AnimatedSprite();
         coin.asset.prepare({
             name: 'coin.png',
@@ -72,30 +79,9 @@ document.onreadystatechange = function () {
             speed: 80,
             defaultFrame: 0
         });
- 
+        
         var collectSound = game.createSound('collect');
         collectSound.prepare({ name: 'coin.mp3' });
-        
-        var powerupLayer = game.createLayer('powerups');
-        var speedBoost = powerupLayer.createEntity();
-        speedBoost.pos = { 
-            x: Math.floor(Math.random() * (700 - 100 + 1) + 100),
-            y: Math.floor(Math.random() * (500 - 100 + 1) + 100)
-        };
-        
-        speedBoost.size = { width: 16, height: 16 };
-        speedBoost.asset = new PixelJS.AnimatedSprite();
-        speedBoost.asset.prepare({
-            name: 'coin.png',
-            frames: 8,
-            rows: 1,
-            speed: 80,
-            defaultFrame: 0
-        });
-
-        var powerupSound = game.createSound('powerup');
-        powerupSound.prepare({ name: 'powerup.wav' }); 
-
         
         player.onCollide(function (entity) {
             if (entity === coin) {
@@ -115,58 +101,41 @@ document.onreadystatechange = function () {
                     '#FFFFFF',
                     'left'
                 );
-            } else if (entity === speedBoost) {
-                powerupSound.play();
-
-                var originalVelocityX = player.velocity.x;
-                var originalVelocityY = player.velocity.y;
-                
-                player.velocity.x == 200;
-                player.velocity.y *= 2;
-                
-                isSpeedBoosted = true;
-                speedBoostTimer = 10;  
-                
-                speedBoost.pos = {
-                    x: Math.floor(Math.random() * (700 - 100 + 1) + 100),
-                    y: Math.floor(Math.random() * (500 - 100 + 1) + 100)
-                };
-                
-                setTimeout(function() {
-                    player.velocity.x = originalVelocityX;
-                    player.velocity.y = originalVelocityY;
-                    isSpeedBoosted = false;
-                    speedBoostTimer = 0;
-                }, 10000);
-
             }
         });
         
         playerLayer.registerCollidable(player);
         itemLayer.registerCollidable(coin);
-        powerupLayer.registerCollidable(speedBoost);
         
         var score = 0;
-        var speedBoostTimer = 0;  
-        var isSpeedBoosted = false;  
         var scoreLayer = game.createLayer("score");
         scoreLayer.static = true;
+
+        enemyLayer.redraw = true;
         
         game.loadAndRun(function (elapsedTime, dt) {
-            if (isSpeedBoosted) {
-                speedBoostTimer -= dt;  
-                
-                scoreLayer.redraw = true;
-                scoreLayer.drawText(
-                    'Speed Boost: ' + Math.ceil(speedBoostTimer) + 's', 
-                    160, 
-                    80, 
-                    '14pt "Trebuchet MS", Helvetica, sans-serif', 
-                    '#FFFF00',  
-                    'right'
-                );
-            }
-            
+
+            enemyLayer.redraw = true;
+            enemyLayer.visible = true;
+
+            enemies.forEach(function(enemy) {
+                enemy.visible = true;
+                console.log(`Enemy position: ${enemy.pos.x}, ${enemy.pos.y}`);
+                console.log(enemy.layer);
+                enemy.pos.x += enemy.velocity.x * dt;
+                enemy.pos.y += enemy.velocity.y * dt;
+                if (enemy.pos.x <= -120 || enemy.pos.x >= 650) {
+                    enemy.velocity.x = -enemy.velocity.x;
+                }
+                if (enemy.pos.y <= -120 || enemy.pos.y >= 450) {
+                    enemy.velocity.y = -enemy.velocity.y;
+                }
+                enemyLayer.draw();
+            });
+
+            enemyLayer.draw();
+
+            console.log("nope here");
         });
     }
 }
