@@ -199,6 +199,7 @@ document.onreadystatechange = function () {
 
         
         game.loadAndRun(function (elapsedTime, dt) {
+            
             enemies.forEach(function(enemy) {
                 enemy.visible = true;
                 console.log(`Enemy position: ${enemy.pos.x}, ${enemy.pos.y}`);
