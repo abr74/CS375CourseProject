@@ -40,9 +40,9 @@ document.onreadystatechange = function () {
         var enemyLayer = game.createLayer('enemies');
         var enemies = []
 
-        function tryNewEnemy() {
+        function tryNewEnemy(position) {
             var newEnemy = enemyLayer.createEntity();
-            newEnemy.pos = { x: 250, y: 250 };
+            newEnemy.pos = { x: position.x, y: position.y }; // Set position based on the parameter
             newEnemy.velocity = { x: 100, y: 100 };
             newEnemy.size = { width: 16, height: 16 };
             newEnemy.asset = new PixelJS.AnimatedSprite();
@@ -58,11 +58,50 @@ document.onreadystatechange = function () {
             enemyLayer.redraw = true; 
             newEnemy.visible = true;
             enemyLayer.registerCollidable(newEnemy);
-        }    
-        
-        tryNewEnemy();
+        }
 
-        setInterval(tryNewEnemy, 2000);
+        var bossLayer = game.createLayer('bosses');
+        var enemies = []
+
+        function tryNewBoss(position) {
+            var newBoss = bossLayer.createEntity();
+            newBoss.pos = { x: position.x, y: position.y }; // Set position based on the parameter
+            newBoss.velocity = { x: 30, y: 30 };
+            newBoss.size = { width: 16, height: 16 };
+            newBoss.asset = new PixelJS.AnimatedSprite();
+            newBoss.asset.prepare({
+                name: 'big-boss.png',
+                frames: 1,
+                rows: 1,
+                speed: 80,
+                defaultFrame: 0
+            });    
+            enemies.push(newBoss);
+            newBoss.addToLayer(bossLayer);
+            bossLayer.redraw = true; 
+            newBoss.visible = true;
+            bossLayer.registerCollidable(newBoss);
+        }
+
+        tryNewEnemy({ x: 250, y: 250 });
+        tryNewBoss({ x: 250, y: 250 });
+
+        tryNewEnemy({ x: 250, y: 1000 });
+        tryNewEnemy({ x: -2000, y: 250 });
+        tryNewEnemy({ x: 250, y: -3000 });
+        tryNewEnemy({ x: 4000, y: 250 });
+
+        tryNewEnemy({ x: 250, y: 5000 });
+        tryNewEnemy({ x: -6000, y: 250 });
+        tryNewEnemy({ x: 250, y: -7000 });
+        tryNewEnemy({ x: 8000, y: 250 });
+
+        tryNewEnemy({ x: 250, y: 9000 });
+        tryNewEnemy({ x: 10000, y: 250 });
+        tryNewEnemy({ x: 250, y: 11000 });
+        tryNewEnemy({ x: 12000, y: 250 });
+        
+        
 
         console.log("actually im here");
 
@@ -84,6 +123,7 @@ document.onreadystatechange = function () {
         collectSound.prepare({ name: 'coin.mp3' });
         
         player.onCollide(function (entity) {
+
             if (entity === coin) {
                 collectSound.play();
                 coin.pos = {
@@ -115,21 +155,34 @@ document.onreadystatechange = function () {
         
         game.loadAndRun(function (elapsedTime, dt) {
 
+            
+
             enemyLayer.redraw = true;
             enemyLayer.visible = true;
 
             enemies.forEach(function(enemy) {
                 enemy.visible = true;
-                console.log(`Enemy position: ${enemy.pos.x}, ${enemy.pos.y}`);
-                console.log(enemy.layer);
-                enemy.pos.x += enemy.velocity.x * dt;
-                enemy.pos.y += enemy.velocity.y * dt;
-                if (enemy.pos.x <= -120 || enemy.pos.x >= 650) {
-                    enemy.velocity.x = -enemy.velocity.x;
+                var chaseSpeed = 100;  // Set the speed at which the enemy moves toward the player
+        
+                // Calculate direction vector from enemy to player
+                var dx = player.pos.x - enemy.pos.x// - 120;
+                var dy = player.pos.y - enemy.pos.y// - 105;
+            
+                // Calculate the length of the direction vector
+                var distance = Math.sqrt(dx * dx + dy * dy);
+            
+                // Normalize the direction vector (divide by the distance to get a unit vector)
+                if (distance > 0) {
+                    dx /= distance;
+                    dy /= distance;
                 }
-                if (enemy.pos.y <= -120 || enemy.pos.y >= 450) {
-                    enemy.velocity.y = -enemy.velocity.y;
-                }
+            
+                // Apply the speed to the normalized direction and update the enemy's position
+                enemy.pos.x += dx * chaseSpeed * dt;
+                enemy.pos.y += dy * chaseSpeed * dt;
+            
+                // Optional: Log position (or use it for debugging purposes)
+                // console.log(enemy.pos.x, enemy.pos.y);
                 enemyLayer.draw();
             });
 
