@@ -1,12 +1,30 @@
 <!doctype html>
 <html lang="en">
-    <head>   
-    </head>
-    <body>
-        <div id="game_container" style="width: 800px; height: 600px;">
-        </div>
-    </body>
-    
+<head>
+    <title>Game Button</title>
+</head>
+<body>
+    <div id="game_container" style="width: 800px; height: 600px;">
+    </div>
+
+    <!-- Create the button -->
+    <button id="startButton">Start Game</button>
+
     <script src="pixel.js/pixel.min.js"></script>
     <script src="game.js"></script>
+
+    <script>
+        // Add an event listener to the button to run the script when clicked
+        document.getElementById('startButton').addEventListener('click', function() {
+            // Call your function or any script to start the game
+            startGame();  // Replace this with the actual function in your game.js
+        });
+
+        // Example function that can be triggered
+        function startGame() {
+            console.log("Game Started!");
+            // Add any game-related logic here, such as initializing the game
+        }
+    </script>
+</body>
 </html>
