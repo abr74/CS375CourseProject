@@ -37,7 +37,13 @@ document.onreadystatechange = function () {
         });
 
 
+        var LeSunLayer = game.createLayer('LeSuns');
+        var bossLayer = game.createLayer('bosses');
         var enemyLayer = game.createLayer('enemies');
+        var frogLayer = game.createLayer('frogs');
+
+
+
         var enemies = []
 
         function tryNewEnemy(position) {
@@ -60,8 +66,7 @@ document.onreadystatechange = function () {
             enemyLayer.registerCollidable(newEnemy);
         }
 
-        var bossLayer = game.createLayer('bosses');
-        var enemies = []
+        
 
         function tryNewBoss(position) {
             var newBoss = bossLayer.createEntity();
@@ -83,25 +88,118 @@ document.onreadystatechange = function () {
             bossLayer.registerCollidable(newBoss);
         }
 
-        tryNewEnemy({ x: 250, y: 250 });
-        tryNewBoss({ x: 250, y: 250 });
+        
 
+        function tryNewLeSun(position) {
+            var LeSun = LeSunLayer.createEntity();
+            LeSun.pos = { x: position.x, y: position.y }; // Set position based on the parameter
+            LeSun.velocity = { x: 30, y: 30 };
+            LeSun.size = { width: 16, height: 16 };
+            LeSun.asset = new PixelJS.AnimatedSprite();
+            LeSun.asset.prepare({
+                name: 'LeSun.png',
+                frames: 1,
+                rows: 1,
+                speed: 80,
+                defaultFrame: 0
+            });    
+            enemies.push(LeSun);
+            LeSun.addToLayer(LeSunLayer);
+            LeSunLayer.redraw = true; 
+            LeSun.visible = true;
+            LeSunLayer.registerCollidable(LeSun);
+        }
+
+        function tryNewFrog(position) {
+            var frog = frogLayer.createEntity();
+            frog.pos = { x: position.x, y: position.y }; // Set position based on the parameter
+            frog.velocity = { x: 30, y: 30 };
+            frog.size = { width: 16, height: 16 };
+            frog.asset = new PixelJS.AnimatedSprite();
+            frog.asset.prepare({
+                name: 'frog.png',
+                frames: 1,
+                rows: 1,
+                speed: 80,
+                defaultFrame: 0
+            });    
+            enemies.push(frog);
+            frog.addToLayer(frogLayer);
+            frogLayer.redraw = true; 
+            frog.visible = true;
+            frogLayer.registerCollidable(frog);
+        }
+
+        tryNewEnemy({ x: 250, y: 250 });
+        tryNewFrog({ x: 300, y: 300 });
+        tryNewFrog({ x: 400, y: 400 });
+        tryNewFrog({ x: 150, y: 150 });
+        
+        
         tryNewEnemy({ x: 250, y: 1000 });
         tryNewEnemy({ x: -2000, y: 250 });
         tryNewEnemy({ x: 250, y: -3000 });
         tryNewEnemy({ x: 4000, y: 250 });
-
         tryNewEnemy({ x: 250, y: 5000 });
         tryNewEnemy({ x: -6000, y: 250 });
         tryNewEnemy({ x: 250, y: -7000 });
         tryNewEnemy({ x: 8000, y: 250 });
-
         tryNewEnemy({ x: 250, y: 9000 });
         tryNewEnemy({ x: 10000, y: 250 });
         tryNewEnemy({ x: 250, y: 11000 });
         tryNewEnemy({ x: 12000, y: 250 });
+        tryNewEnemy({ x: 250, y: 13000 });
+        tryNewEnemy({ x: -14000, y: 250 });
+        tryNewEnemy({ x: 250, y: -15000 });
+        tryNewEnemy({ x: 16000, y: 250 });
+        tryNewEnemy({ x: 250, y: 17000 });
+        tryNewEnemy({ x: -18000, y: 250 });
+        tryNewEnemy({ x: 250, y: -19000 });
+        tryNewEnemy({ x: 20000, y: 250 });
+        tryNewEnemy({ x: 250, y: 21000 });
+        tryNewEnemy({ x: -22000, y: 250 });
+        tryNewEnemy({ x: 250, y: -23000 });
+        tryNewEnemy({ x: 24000, y: 250 });
+
+        tryNewBoss({ x: 250, y: 1000 });
+        tryNewBoss({ x: -2000, y: 250 });
+        tryNewBoss({ x: 250, y: -3000 });
+        tryNewBoss({ x: 4000, y: 250 });
+        tryNewBoss({ x: 250, y: 5000 });
+        tryNewBoss({ x: -6000, y: 250 });
+        tryNewBoss({ x: 250, y: -7000 });
+        tryNewBoss({ x: 8000, y: 250 });
+        tryNewBoss({ x: 250, y: 9000 });
+        tryNewBoss({ x: -10000, y: 250 });
+        tryNewBoss({ x: 250, y: -11000 });
+        tryNewBoss({ x: 12000, y: 250 });
+        tryNewEnemy({ x: 250, y: 13000 });
+        tryNewEnemy({ x: -14000, y: 250 });
+        tryNewEnemy({ x: 250, y: -15000 });
+        tryNewEnemy({ x: 16000, y: 250 });
+        tryNewEnemy({ x: 250, y: 17000 });
+        tryNewEnemy({ x: -18000, y: 250 });
+        tryNewEnemy({ x: 250, y: -19000 });
+        tryNewEnemy({ x: 20000, y: 250 });
+        tryNewEnemy({ x: 250, y: 21000 });
+        tryNewEnemy({ x: -22000, y: 250 });
+        tryNewEnemy({ x: 250, y: -23000 });
+        tryNewEnemy({ x: 24000, y: 250 });
+
+        tryNewLeSun({ x: 250, y: 1000 });
+        tryNewLeSun({ x: -1700, y: 250 });
+        tryNewLeSun({ x: 250, y: -2400 });
+        tryNewLeSun({ x: 3100, y: 250 });
+        tryNewLeSun({ x: 250, y: 3800 });
+        tryNewLeSun({ x: -4500, y: 250 });
+        tryNewLeSun({ x: 250, y: -5200 });
+        tryNewLeSun({ x: 5900, y: 250 });
+        tryNewLeSun({ x: 250, y: 6600 });
+        tryNewLeSun({ x: -7300, y: 250 });
+        tryNewLeSun({ x: 250, y: -8000 });
+        tryNewLeSun({ x: 8700, y: 250 });
         
-        
+
 
         console.log("actually im here");
 
@@ -162,8 +260,27 @@ document.onreadystatechange = function () {
 
             enemies.forEach(function(enemy) {
                 enemy.visible = true;
-                var chaseSpeed = 100;  // Set the speed at which the enemy moves toward the player
-        
+
+                if (enemy.layer == frogLayer) {
+                    var chaseSpeed = 115;  // Set the speed at which the enemy moves toward the player
+                }
+                
+                if (enemy.layer == bossLayer) {
+                    var chaseSpeed = 70;  // Set the speed at which the enemy moves toward the player
+                }
+
+                if (enemy.layer == enemyLayer) {
+                    var chaseSpeed = 115;  // Set the speed at which the enemy moves toward the player
+                }
+
+                if (enemy.layer == LeSunLayer) {
+                    var chaseSpeed = 20;  // Set the speed at which the enemy moves toward the player
+                }
+
+                
+
+                
+                
                 // Calculate direction vector from enemy to player
                 var dx = player.pos.x - enemy.pos.x// - 120;
                 var dy = player.pos.y - enemy.pos.y// - 105;
