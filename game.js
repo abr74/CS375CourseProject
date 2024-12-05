@@ -253,8 +253,6 @@ document.onreadystatechange = function () {
         
         game.loadAndRun(function (elapsedTime, dt) {
 
-            
-
             enemyLayer.redraw = true;
             enemyLayer.visible = true;
 
@@ -264,48 +262,47 @@ document.onreadystatechange = function () {
                 if (enemy.layer == frogLayer) {
                     var chaseSpeed = 115;  // Set the speed at which the enemy moves toward the player
                 }
-                
-                if (enemy.layer == bossLayer) {
-                    var chaseSpeed = 70;  // Set the speed at which the enemy moves toward the player
-                }
 
-                if (enemy.layer == enemyLayer) {
-                    var chaseSpeed = 115;  // Set the speed at which the enemy moves toward the player
-                }
+                else {
+        
+                    if (enemy.layer == bossLayer) {
+                        var chaseSpeed = 70;  // Set the speed at which the enemy moves toward the player
+                    }
 
-                if (enemy.layer == LeSunLayer) {
-                    var chaseSpeed = 20;  // Set the speed at which the enemy moves toward the player
-                }
+                    if (enemy.layer == enemyLayer) {
+                        var chaseSpeed = 115;  // Set the speed at which the enemy moves toward the player
+                    }
 
-                
+                    if (enemy.layer == LeSunLayer) {
+                        var chaseSpeed = 20;  // Set the speed at which the enemy moves toward the player
+                    }
 
+                    
+                    // Calculate direction vector from enemy to player
+                    var dx = player.pos.x - enemy.pos.x// - 120;
+                    var dy = player.pos.y - enemy.pos.y// - 105;
                 
+                    // Calculate the length of the direction vector
+                    var distance = Math.sqrt(dx * dx + dy * dy);
                 
-                // Calculate direction vector from enemy to player
-                var dx = player.pos.x - enemy.pos.x// - 120;
-                var dy = player.pos.y - enemy.pos.y// - 105;
-            
-                // Calculate the length of the direction vector
-                var distance = Math.sqrt(dx * dx + dy * dy);
-            
-                // Normalize the direction vector (divide by the distance to get a unit vector)
-                if (distance > 0) {
-                    dx /= distance;
-                    dy /= distance;
+                    // Normalize the direction vector (divide by the distance to get a unit vector)
+                    if (distance > 0) {
+                        dx /= distance;
+                        dy /= distance;
+                    }
+                
+                    // Apply the speed to the normalized direction and update the enemy's position
+                    enemy.pos.x += dx * chaseSpeed * dt;
+                    enemy.pos.y += dy * chaseSpeed * dt;
+                
+                    // Optional: Log position (or use it for debugging purposes)
+                    // console.log(enemy.pos.x, enemy.pos.y);
+                    enemyLayer.draw();
                 }
-            
-                // Apply the speed to the normalized direction and update the enemy's position
-                enemy.pos.x += dx * chaseSpeed * dt;
-                enemy.pos.y += dy * chaseSpeed * dt;
-            
-                // Optional: Log position (or use it for debugging purposes)
-                // console.log(enemy.pos.x, enemy.pos.y);
-                enemyLayer.draw();
             });
 
             enemyLayer.draw();
 
-            console.log("nope here");
         });
     }
 }
