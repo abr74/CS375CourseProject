@@ -49,7 +49,7 @@ document.onreadystatechange = function () {
         function tryNewEnemy(position) {
             var newEnemy = enemyLayer.createEntity();
             newEnemy.pos = { x: position.x, y: position.y }; // Set position based on the parameter
-            newEnemy.velocity = { x: 100, y: 100 };
+            newEnemy.velocity = { x: 115, y: 115 };
             newEnemy.size = { width: 16, height: 16 };
             newEnemy.asset = new PixelJS.AnimatedSprite();
             newEnemy.asset.prepare({
@@ -71,7 +71,7 @@ document.onreadystatechange = function () {
         function tryNewBoss(position) {
             var newBoss = bossLayer.createEntity();
             newBoss.pos = { x: position.x, y: position.y }; // Set position based on the parameter
-            newBoss.velocity = { x: 30, y: 30 };
+            newBoss.velocity = { x: 80, y: 80 };
             newBoss.size = { width: 16, height: 16 };
             newBoss.asset = new PixelJS.AnimatedSprite();
             newBoss.asset.prepare({
@@ -110,10 +110,10 @@ document.onreadystatechange = function () {
             LeSunLayer.registerCollidable(LeSun);
         }
 
-        function tryNewFrog(position) {
+        function tryNewFrog(position, velocity) {
             var frog = frogLayer.createEntity();
             frog.pos = { x: position.x, y: position.y }; // Set position based on the parameter
-            frog.velocity = { x: 30, y: 30 };
+            frog.velocity = { x: velocity.x, y: velocity.y }; // Set velocity based on the parameter
             frog.size = { width: 16, height: 16 };
             frog.asset = new PixelJS.AnimatedSprite();
             frog.asset.prepare({
@@ -129,11 +129,12 @@ document.onreadystatechange = function () {
             frog.visible = true;
             frogLayer.registerCollidable(frog);
         }
+        
 
-        tryNewEnemy({ x: 250, y: 250 });
-        tryNewFrog({ x: 300, y: 300 });
-        tryNewFrog({ x: 400, y: 400 });
-        tryNewFrog({ x: 150, y: 150 });
+        tryNewFrog({ x: 150, y: 150 }, { x: 150, y: 150 });
+        tryNewFrog({ x: 700, y: 500 }, { x: -100, y: -100 });
+        tryNewFrog({ x: 700, y: 100 }, { x: -80, y: 80 });
+        tryNewFrog({ x: 100, y: 600 }, { x: 120, y: -70 });
         
         
         tryNewEnemy({ x: 250, y: 1000 });
@@ -260,24 +261,22 @@ document.onreadystatechange = function () {
                 enemy.visible = true;
 
                 if (enemy.layer == frogLayer) {
-                    var chaseSpeed = 115;  // Set the speed at which the enemy moves toward the player
+                    enemy.visible = true;
+                    console.log(`Enemy position: ${enemy.pos.x}, ${enemy.pos.y}`);
+                    console.log(enemy.layer);
+                    enemy.pos.x += enemy.velocity.x * dt;
+                    enemy.pos.y += enemy.velocity.y * dt;
+                    if (enemy.pos.x <= 0 || enemy.pos.x >= 800) {
+                        enemy.velocity.x = -enemy.velocity.x;
+                    }
+                    if (enemy.pos.y <= 0 || enemy.pos.y >= 600) {
+                        enemy.velocity.y = -enemy.velocity.y;
+                    }
+                    enemyLayer.draw();
                 }
 
                 else {
         
-                    if (enemy.layer == bossLayer) {
-                        var chaseSpeed = 70;  // Set the speed at which the enemy moves toward the player
-                    }
-
-                    if (enemy.layer == enemyLayer) {
-                        var chaseSpeed = 115;  // Set the speed at which the enemy moves toward the player
-                    }
-
-                    if (enemy.layer == LeSunLayer) {
-                        var chaseSpeed = 20;  // Set the speed at which the enemy moves toward the player
-                    }
-
-                    
                     // Calculate direction vector from enemy to player
                     var dx = player.pos.x - enemy.pos.x// - 120;
                     var dy = player.pos.y - enemy.pos.y// - 105;
@@ -292,8 +291,8 @@ document.onreadystatechange = function () {
                     }
                 
                     // Apply the speed to the normalized direction and update the enemy's position
-                    enemy.pos.x += dx * chaseSpeed * dt;
-                    enemy.pos.y += dy * chaseSpeed * dt;
+                    enemy.pos.x += dx * enemy.velocity.x * dt;
+                    enemy.pos.y += dy * enemy.velocity.y * dt;
                 
                     // Optional: Log position (or use it for debugging purposes)
                     // console.log(enemy.pos.x, enemy.pos.y);
