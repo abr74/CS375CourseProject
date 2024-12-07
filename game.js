@@ -6,19 +6,47 @@ document.onreadystatechange = function () {
             width: 800,
             height: 600
         });
-        
+
+    // Fetch temperature from the server
+    fetch('/weather')
+    .then(response => response.json())
+    .then(data => {
+        const temperature = data.temperature; // Get the temperature value from the API response
+        console.log("Current Temperature:", temperature);
+
+        // Choose background based on the temperature
+        let backgroundImage;
+        if (temperature <= 32) {
+            backgroundImage = 'snow.png'; // 0-20°F
+        } else if (temperature >= 80) {
+            backgroundImage = 'sand.png'; // 61-80°F
+        } else {
+            backgroundImage = 'grass.png'; // 81-100°F
+        }
+
+        // Set the background image
         var backgroundLayer = game.createLayer('background');
         var grass = backgroundLayer.createEntity();
         backgroundLayer.static = true;
         grass.pos = { x: 0, y: 0 };
         grass.asset = new PixelJS.Tile();
         grass.asset.prepare({
-            name: 'grass.png',
-            size: { 
-                width: 800, 
-                height: 600 
-            }
+            name: backgroundImage,  // Set the background image based on the temperature
+            size: { width: 800, height: 600 }
         });
+
+        // Add temperature display to the screen
+        var tempLayer = game.createLayer('temperature');
+        tempLayer.static = true;
+        tempLayer.redraw = true;
+        tempLayer.drawText(
+            `Temperature: ${temperature}°F`, // Show the temperature
+            50,
+            80,
+            '14pt "Trebuchet MS", Helvetica, sans-serif',
+            '#FFFFFF',
+            'left'
+        );
         
         var playerLayer = game.createLayer('players');
         var player = new PixelJS.Player();
@@ -148,7 +176,44 @@ document.onreadystatechange = function () {
         var powerupSound = game.createSound('powerup');
         powerupSound.prepare({ name: 'powerup.wav' }); 
 
-        
+        var shield = powerupLayer.createEntity();
+        shield.pos = { 
+            x: Math.floor(Math.random() * (700 - 100 + 1) + 100),
+            y: Math.floor(Math.random() * (500 - 100 + 1) + 100)
+        };
+
+        shield.size = { width: 16, height: 16 };
+        shield.asset = new PixelJS.AnimatedSprite();
+        shield.asset.prepare({
+            name: 'shield.png',
+            frames: 8,
+            rows: 1,
+            speed: 80,
+            defaultFrame: 0
+        });
+
+        var isShielded = false;
+        var shieldTimer = 0;
+
+        var iceBlockLayer = game.createLayer('iceBlocks');
+        var iceBlock = iceBlockLayer.createEntity();
+        iceBlock.pos = { 
+            x: Math.floor(Math.random() * (700 - 100 + 1) + 100), 
+            y: Math.floor(Math.random() * (500 - 100 + 1) + 100) 
+        };
+
+        iceBlock.size = { width: 32, height: 32 };
+        iceBlock.asset = new PixelJS.Tile();
+        iceBlock.asset.prepare({
+            name: 'ice.png', 
+            size: { width: 32, height: 32 }
+        });
+
+        iceBlockLayer.registerCollidable(iceBlock);
+
+        var isOnIceBlock = false;
+        var originalPlayerSpeed = player.velocity.x;
+
         player.onCollide(function (entity) {
             if (entity === coin) {
                 collectSound.play();
@@ -182,12 +247,35 @@ document.onreadystatechange = function () {
                     speedBoostTimer = 0;
 
                 }, 10000);
+            } else if (entity === shield) {
+                powerupSound.play();
+                
+                isShielded = true;
+                shieldTimer = 10;
+                
+                shield.pos = {
+                    x: Math.floor(Math.random() * (700 - 100 + 1) + 100),
+                    y: Math.floor(Math.random() * (500 - 100 + 1) + 100)
+                };
+                
+                setTimeout(function() {
+                    isShielded = false;
+                    shieldTimer = 0;
+                }, 10000);
+            } else if (entity === iceBlock) {
+                player.velocity.x = 25; 
+                player.velocity.y = 25; 
+                isOnIceBlock = true; 
+            } else if (enemies.includes(entity) && !isShielded) {
+                //add, when death logic is made 
+                
             }
         });
         
         playerLayer.registerCollidable(player);
         itemLayer.registerCollidable(coin);
         powerupLayer.registerCollidable(speedBoost);
+        powerupLayer.registerCollidable(shield);
         
         var score = 0;
         var speedBoostTimer = 0;  
@@ -242,7 +330,44 @@ document.onreadystatechange = function () {
                     'right'
                 );
             }
-            
+
+            if (isShielded) {
+                shieldTimer -= dt;
+                
+                scoreLayer.redraw = true;
+                scoreLayer.drawText(
+                    'Shield: ' + Math.ceil(shieldTimer) + 's', 
+                    125, 
+                    110, 
+                    '14pt "Trebuchet MS", Helvetica, sans-serif', 
+                    '#00FFFF',  
+                    'right'
+                );
+            }
+
+            // Draw ice block
+            iceBlockLayer.draw();
+
+            if (isOnIceBlock) {
+                if (!isColliding(player, iceBlock)) {
+                    player.velocity.x = originalPlayerSpeed;
+                    player.velocity.y = originalPlayerSpeed;
+                    isOnIceBlock = false; 
+                }
+            }
         });
-    }
-}
+
+        function isColliding(entityA, entityB) {
+            return (
+                entityA.pos.x < entityB.pos.x + entityB.size.width &&
+                entityA.pos.x + entityA.size.width > entityB.pos.x &&
+                entityA.pos.y < entityB.pos.y + entityB.size.height &&
+                entityA.pos.y + entityA.size.height > entityB.pos.y
+            );
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching weather:', error);
+    });
+}}
+
