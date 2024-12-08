@@ -11,10 +11,9 @@ document.onreadystatechange = function () {
     fetch('/weather')
     .then(response => response.json())
     .then(data => {
-        const temperature = data.temperature; // Get the temperature value from the API response
+        const temperature = data.temperature; 
         console.log("Current Temperature:", temperature);
 
-        // Choose background based on the temperature
         let backgroundImage;
         if (temperature <= 32) {
             backgroundImage = 'snow.png'; // 0-20°F
@@ -24,30 +23,59 @@ document.onreadystatechange = function () {
             backgroundImage = 'grass.png'; // 81-100°F
         }
 
-        // Set the background image
         var backgroundLayer = game.createLayer('background');
         var grass = backgroundLayer.createEntity();
         backgroundLayer.static = true;
         grass.pos = { x: 0, y: 0 };
         grass.asset = new PixelJS.Tile();
         grass.asset.prepare({
-            name: backgroundImage,  // Set the background image based on the temperature
+            name: backgroundImage,  
             size: { width: 800, height: 600 }
         });
 
-        // Add temperature display to the screen
         var tempLayer = game.createLayer('temperature');
         tempLayer.static = true;
         tempLayer.redraw = true;
         tempLayer.drawText(
-            `Temperature: ${temperature}°F`, // Show the temperature
+            ` ${temperature}°F`, 
+            730,
             50,
-            80,
             '14pt "Trebuchet MS", Helvetica, sans-serif',
             '#FFFFFF',
             'left'
         );
         
+        var iceBlockLayer = game.createLayer('iceBlocks');
+        var iceBlocks = []; 
+
+        for (let i = 0; i < 4; i++) {
+            var iceBlock = iceBlockLayer.createEntity();
+            iceBlock.pos = { 
+                x: Math.floor(Math.random() * (700 - 100 + 1) + 100), 
+                y: Math.floor(Math.random() * (500 - 100 + 1) + 100) 
+            };
+
+            iceBlock.size = { width: 32, height: 32 };
+            iceBlock.asset = new PixelJS.Tile();
+
+            let iceBlockImage;
+            if (temperature <= 32) {
+                iceBlockImage = 'ice.png'; 
+            } else if (temperature > 80) {
+                iceBlockImage = 'cactus.png'; 
+            } else {
+                iceBlockImage = 'mud.png';
+            }
+
+            iceBlock.asset.prepare({
+                name: iceBlockImage, 
+                size: { width: 32, height: 32 }
+            });
+
+            iceBlockLayer.registerCollidable(iceBlock);
+            iceBlocks.push(iceBlock); 
+        }
+
         var playerLayer = game.createLayer('players');
         var player = new PixelJS.Player();
         player.addToLayer(playerLayer);
@@ -195,22 +223,6 @@ document.onreadystatechange = function () {
         var isShielded = false;
         var shieldTimer = 0;
 
-        var iceBlockLayer = game.createLayer('iceBlocks');
-        var iceBlock = iceBlockLayer.createEntity();
-        iceBlock.pos = { 
-            x: Math.floor(Math.random() * (700 - 100 + 1) + 100), 
-            y: Math.floor(Math.random() * (500 - 100 + 1) + 100) 
-        };
-
-        iceBlock.size = { width: 32, height: 32 };
-        iceBlock.asset = new PixelJS.Tile();
-        iceBlock.asset.prepare({
-            name: 'ice.png', 
-            size: { width: 32, height: 32 }
-        });
-
-        iceBlockLayer.registerCollidable(iceBlock);
-
         var isOnIceBlock = false;
         var originalPlayerSpeed = player.velocity.x;
 
@@ -225,12 +237,17 @@ document.onreadystatechange = function () {
                 score += 1;
             } else if (entity === speedBoost) {
                 powerupSound.play();
-
-                var originalVelocityX = player.velocity.x;
-                var originalVelocityY = player.velocity.y;
                 
-                player.velocity.x = 200;
-                player.velocity.y = 200;
+                if (window.speedBoostTimeout) {
+                    clearTimeout(window.speedBoostTimeout);
+                }
+                
+                if (!isSpeedBoosted) {
+                    originalVelocityX = player.velocity.x;
+                    originalVelocityY = player.velocity.y;
+                    player.velocity.x = 200;
+                    player.velocity.y = 200;
+                }
                 
                 isSpeedBoosted = true;
                 speedBoostTimer = 10;  
@@ -240,15 +257,18 @@ document.onreadystatechange = function () {
                     y: Math.floor(Math.random() * (500 - 100 + 1) + 100)
                 };
                 
-                setTimeout(function() {
+                window.speedBoostTimeout = setTimeout(function() {
                     player.velocity.x = originalVelocityX;
                     player.velocity.y = originalVelocityY;
                     isSpeedBoosted = false;
                     speedBoostTimer = 0;
-
                 }, 10000);
             } else if (entity === shield) {
                 powerupSound.play();
+                
+                if (window.shieldTimeout) {
+                    clearTimeout(window.shieldTimeout);
+                }
                 
                 isShielded = true;
                 shieldTimer = 10;
@@ -258,16 +278,16 @@ document.onreadystatechange = function () {
                     y: Math.floor(Math.random() * (500 - 100 + 1) + 100)
                 };
                 
-                setTimeout(function() {
+                window.shieldTimeout = setTimeout(function() {
                     isShielded = false;
                     shieldTimer = 0;
                 }, 10000);
-            } else if (entity === iceBlock) {
+            } else if (iceBlocks.includes(entity)) { 
                 player.velocity.x = 25; 
                 player.velocity.y = 25; 
                 isOnIceBlock = true; 
             } else if (enemies.includes(entity) && !isShielded) {
-                //add, when death logic is made 
+                
                 
             }
         });
@@ -345,11 +365,17 @@ document.onreadystatechange = function () {
                 );
             }
 
-            // Draw ice block
             iceBlockLayer.draw();
 
             if (isOnIceBlock) {
-                if (!isColliding(player, iceBlock)) {
+                let stillColliding = false;
+                for (let iceBlock of iceBlocks) {
+                    if (isColliding(player, iceBlock)) {
+                        stillColliding = true;
+                        break;
+                    }
+                }
+                if (!stillColliding) {
                     player.velocity.x = originalPlayerSpeed;
                     player.velocity.y = originalPlayerSpeed;
                     isOnIceBlock = false; 
