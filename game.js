@@ -88,7 +88,7 @@ document.onreadystatechange = function () {
             speedBoost.size = { width: 16, height: 16 };
             speedBoost.asset = new PixelJS.AnimatedSprite();
             speedBoost.asset.prepare({
-                name: 'speedboost.png',
+                name: 'speedBoost.png',
                 frames: 8,
                 rows: 1,
                 speed: 80,
