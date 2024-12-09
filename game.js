@@ -16,9 +16,9 @@ document.onreadystatechange = function () {
                 console.log("Current Temperature:", temperature);
 
                 let backgroundImage;
-                if (temperature <= 32) {
+                if (temperature <= 38) {
                     backgroundImage = 'snow.png'; // 0-20°F
-                } else if (temperature >= 80) {
+                } else if (temperature >= 70) {
                     backgroundImage = 'sand.png'; // 61-80°F
                 } else {
                     backgroundImage = 'grass.png'; // 81-100°F
@@ -43,7 +43,7 @@ document.onreadystatechange = function () {
                 730,
                 50,
                 '14pt "Trebuchet MS", Helvetica, sans-serif',
-                '#FFFFFF',
+                '#000000',
                 'left'
             );
             
@@ -395,25 +395,28 @@ document.onreadystatechange = function () {
             function displayGameOver() {
                 var gameOverLayer = game.createLayer('gameOver');
                 gameOverLayer.static = true;
-
+            
+                // Adjusted font for "Game Over" text
                 gameOverLayer.drawText(
                     'Game Over', 
-                    300, 
+                    400, 
                     250, 
-                    '24pt "Arial", sans-serif', 
+                    'bold 36pt "Arial Black", sans-serif', 
                     '#FF0000', 
                     'center'
                 );
                 
+                // Adjusted font for "Final Score" text
                 gameOverLayer.drawText(
                     'Final Score: ' + score, 
+                    400, 
                     300, 
-                    300, 
-                    '20pt "Arial", sans-serif', 
-                    '#FFFFFF', 
+                    'italic 24pt "Verdana", sans-serif', 
+                    '#FF0000', 
                     'center'
                 );
             }
+            
 
             
             playerLayer.registerCollidable(player);
@@ -496,7 +499,7 @@ document.onreadystatechange = function () {
                     50, 
                     50, 
                     '14pt "Trebuchet MS", Helvetica, sans-serif', 
-                    '#FFFFFF',
+                    '#000000',
                     'left'
                 );
 
