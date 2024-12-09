@@ -30,30 +30,6 @@ document.onreadystatechange = function () {
             player.size = { width: 32, height: 32 };
             player.velocity = { x: 100, y: 100 };
 
-            player.moveLeft = function() {
-                if (this.canMoveLeft && this.pos.x > 0) {
-                    this.pos.x -= this.velocity.x * this.layer.engine._deltaTime;
-                }
-            };
-
-            player.moveRight = function() {
-                if (this.canMoveRight && this.pos.x + this.size.width < 800) {
-                    this.pos.x += this.velocity.x * this.layer.engine._deltaTime;
-                }
-            };
-
-            player.moveUp = function() {
-                if (this.canMoveUp && this.pos.y > 0) {
-                    this.pos.y -= this.velocity.y * this.layer.engine._deltaTime;
-                }
-            };
-
-            player.moveDown = function() {
-                if (this.canMoveDown && this.pos.y + this.size.height < 600) {
-                    this.pos.y += this.velocity.y * this.layer.engine._deltaTime;
-                }
-            };
-
             player.asset = new PixelJS.AnimatedSprite();
             player.asset.prepare({ 
                 name: 'char.png', 
@@ -181,6 +157,15 @@ document.onreadystatechange = function () {
                         speedBoostTimer = 0;
                     }, 10000);
                 }
+                // Game Over logic when colliding with enemy
+                else if (enemies.includes(entity)) {
+                    console.log("collided");
+                    // Display game over message
+                    displayGameOver();
+                    player.velocity.x = 0;
+                    player.velocity.y = 0;
+                    
+                }
             });
 
             playerLayer.registerCollidable(player);
@@ -233,6 +218,30 @@ document.onreadystatechange = function () {
                     );
                 }
             });
+
+            // Function to display Game Over message and score
+            function displayGameOver() {
+                var gameOverLayer = game.createLayer('gameOver');
+                gameOverLayer.static = true;
+
+                gameOverLayer.drawText(
+                    'Game Over', 
+                    300, 
+                    250, 
+                    '24pt "Arial", sans-serif', 
+                    '#FF0000', 
+                    'center'
+                );
+                
+                gameOverLayer.drawText(
+                    'Final Score: ' + score, 
+                    300, 
+                    300, 
+                    '20pt "Arial", sans-serif', 
+                    '#FFFFFF', 
+                    'center'
+                );
+            }
         });
     }
-}
+};
