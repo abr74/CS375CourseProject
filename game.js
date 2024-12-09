@@ -383,10 +383,37 @@ document.onreadystatechange = function () {
                     player.velocity.y = 25; 
                     isOnIceBlock = true; 
                 } else if (enemies.includes(entity) && !isShielded) {
-                    
+                    console.log("collided");
+                    // Display game over message
+                    displayGameOver();
+                    player.velocity.x = 0;
+                    player.velocity.y = 0;
                     
                 }
             });
+
+            function displayGameOver() {
+                var gameOverLayer = game.createLayer('gameOver');
+                gameOverLayer.static = true;
+
+                gameOverLayer.drawText(
+                    'Game Over', 
+                    300, 
+                    250, 
+                    '24pt "Arial", sans-serif', 
+                    '#FF0000', 
+                    'center'
+                );
+                
+                gameOverLayer.drawText(
+                    'Final Score: ' + score, 
+                    300, 
+                    300, 
+                    '20pt "Arial", sans-serif', 
+                    '#FFFFFF', 
+                    'center'
+                );
+            }
 
             
             playerLayer.registerCollidable(player);
