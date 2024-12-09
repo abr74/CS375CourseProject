@@ -2,21 +2,54 @@
 <html lang="en">
 <head>
     <title>Game Button</title>
+    <style>
+        /* Styling for the body to ensure it fills the whole screen */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        /* Add background image to the game container */
+        #game_container {
+            width: 100%; /* Full width */
+            height: 100vh; /* Full viewport height */
+            background-image: url('assets/sprite_sheets/start_screen.png'); /* Replace with your background image path */
+            background-size: cover; /* Ensures the background image covers the entire container */
+            background-position: center; /* Center the background image */
+            position: relative; /* Needed for absolute positioning of the clickable image */
+        }
+
+        /* Style for the clickable image */
+        #clickableImage {
+            position: absolute;
+            top: 50%; /* Adjust the image position */
+            left: 50%;
+            transform: translate(-50%, -50%); /* Center the image */
+            cursor: pointer; /* Changes the cursor to indicate it's clickable */
+        }
+
+        /* Optional: You can also add styling for the button here if needed */
+        /* #startButton {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        } */
+    </style>
 </head>
 <body>
-    <div id="game_container" style="width: 800px; height: 600px;">
+    <div id="game_container">
+        <!-- Image that will trigger the game start when clicked -->
+        <img id="clickableImage" src="assets/sprite_sheets/start_button.png" alt="Start Game" />
     </div>
-
-    <!-- Create the button -->
-    <button id="startButton">Start Game</button>
 
     <script src="pixel.js/pixel.min.js"></script>
     <script src="game.js"></script>
 
     <script>
-        // Add an event listener to the button to run the script when clicked
-        document.getElementById('startButton').addEventListener('click', function() {
-            // Call your function or any script to start the game
+        // Add an event listener to the clickable image to run the script when clicked
+        document.getElementById('clickableImage').addEventListener('click', function() {
+            // Call your function to start the game
             startGame();  // Replace this with the actual function in your game.js
         });
 

@@ -1,0 +1,19 @@
+/* styles.css */
+
+/* Add background image */
+#game_container {
+    width: 800px;
+    height: 600px;
+    background-image: url('assets/sprite_sheets/start_screen.png'); /* Replace with your background image */
+    background-size: cover; /* Ensures the image covers the entire area */
+    position: relative; /* Needed for absolute positioning of the clickable image */
+}
+
+/* Style for the clickable image */
+#clickableImage {
+    position: absolute;
+    top: 50%; /* Adjust the image position */
+    left: 50%;
+    transform: translate(-50%, -50%); /* Center the image */
+    cursor: pointer; /* Changes the cursor to indicate it's clickable */
+}

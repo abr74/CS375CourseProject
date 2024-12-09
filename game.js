@@ -1,7 +1,7 @@
 document.onreadystatechange = function () {
     if (document.readyState == "complete") {
         // Add event listener to start the game when the button is clicked
-        document.getElementById('startButton').addEventListener('click', function () {
+        document.getElementById('clickableImage').addEventListener('click', function () {
             // Start the game logic after the button is clicked
             var game = new PixelJS.Engine();
             game.init({
