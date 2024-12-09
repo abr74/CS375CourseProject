@@ -6,19 +6,116 @@ document.onreadystatechange = function () {
             width: 800,
             height: 600
         });
+
+        // Fetch temperature from the server
+        fetch('/weather')
+        .then(response => response.json())
+        .then(data => {
+            const temperature = data.temperature; 
+            console.log("Current Temperature:", temperature);
+
+            let backgroundImage;
+            if (temperature <= 32) {
+                backgroundImage = 'snow.png'; // 0-20°F
+            } else if (temperature >= 80) {
+                backgroundImage = 'sand.png'; // 61-80°F
+            } else {
+                backgroundImage = 'grass.png'; // 81-100°F
+            }
         
+                
         var backgroundLayer = game.createLayer('background');
         var grass = backgroundLayer.createEntity();
         backgroundLayer.static = true;
         grass.pos = { x: 0, y: 0 };
         grass.asset = new PixelJS.Tile();
         grass.asset.prepare({
-            name: 'grass.png',
-            size: { 
-                width: 800, 
-                height: 600 
-            }
+            name: backgroundImage,  
+            size: { width: 800, height: 600 }
         });
+
+        var tempLayer = game.createLayer('temperature');
+        tempLayer.static = true;
+        tempLayer.redraw = true;
+        tempLayer.drawText(
+            ` ${temperature}°F`, 
+            730,
+            50,
+            '14pt "Trebuchet MS", Helvetica, sans-serif',
+            '#FFFFFF',
+            'left'
+        );
+        
+        var iceBlockLayer = game.createLayer('iceBlocks');
+        var iceBlocks = []; 
+
+        for (let i = 0; i < 4; i++) {
+            var iceBlock = iceBlockLayer.createEntity();
+            iceBlock.pos = { 
+                x: Math.floor(Math.random() * (700 - 100 + 1) + 100), 
+                y: Math.floor(Math.random() * (500 - 100 + 1) + 100) 
+            };
+
+            iceBlock.size = { width: 32, height: 32 };
+            iceBlock.asset = new PixelJS.Tile();
+
+            let iceBlockImage;
+            if (temperature <= 32) {
+                iceBlockImage = 'ice.png'; 
+            } else if (temperature > 80) {
+                iceBlockImage = 'cactus.png'; 
+            } else {
+                iceBlockImage = 'mud.png';
+            }
+
+            iceBlock.asset.prepare({
+                name: iceBlockImage, 
+                size: { width: 32, height: 32 }
+            });
+
+            iceBlockLayer.registerCollidable(iceBlock);
+            iceBlocks.push(iceBlock); 
+        }
+
+        var powerupLayer = game.createLayer('powerups');
+        var speedBoost = powerupLayer.createEntity();
+        speedBoost.pos = { 
+            x: Math.floor(Math.random() * (700 - 100 + 1) + 100),
+            y: Math.floor(Math.random() * (500 - 100 + 1) + 100)
+        };
+        
+        speedBoost.size = { width: 16, height: 16 };
+        speedBoost.asset = new PixelJS.AnimatedSprite();
+        speedBoost.asset.prepare({
+            name: 'speedboost.png',
+            frames: 8,
+            rows: 1,
+            speed: 80,
+            defaultFrame: 0
+        });
+
+        var powerupSound = game.createSound('powerup');
+        powerupSound.prepare({ name: 'powerup.wav' }); 
+
+        var shield = powerupLayer.createEntity();
+        shield.pos = { 
+            x: Math.floor(Math.random() * (700 - 100 + 1) + 100),
+            y: Math.floor(Math.random() * (500 - 100 + 1) + 100)
+        };
+
+        shield.size = { width: 16, height: 16 };
+        shield.asset = new PixelJS.AnimatedSprite();
+        shield.asset.prepare({
+            name: 'shield.png',
+            frames: 8,
+            rows: 1,
+            speed: 80,
+            defaultFrame: 0
+        });
+
+        var isShielded = false;
+        var shieldTimer = 0;
+
         
         var playerLayer = game.createLayer('players');
         var player = new PixelJS.Player();
@@ -35,6 +132,9 @@ document.onreadystatechange = function () {
             speed: 200,
             defaultFrame: 1
         });
+
+        var isOnIceBlock = false;
+        var originalPlayerSpeed = player.velocity.x;
 
 
         var LeSunLayer = game.createLayer('LeSuns');
@@ -94,7 +194,7 @@ document.onreadystatechange = function () {
             var LeSun = LeSunLayer.createEntity();
             LeSun.pos = { x: position.x, y: position.y }; // Set position based on the parameter
             LeSun.velocity = { x: 30, y: 30 };
-            LeSun.size = { width: 16, height: 16 };
+            LeSun.size = { width: 150, height: 150 };
             LeSun.asset = new PixelJS.AnimatedSprite();
             LeSun.asset.prepare({
                 name: 'LeSun.png',
@@ -222,7 +322,6 @@ document.onreadystatechange = function () {
         collectSound.prepare({ name: 'coin.mp3' });
         
         player.onCollide(function (entity) {
-
             if (entity === coin) {
                 collectSound.play();
                 coin.pos = {
@@ -231,28 +330,89 @@ document.onreadystatechange = function () {
                 };
                 
                 score += 1;
-                scoreLayer.redraw = true;
-                scoreLayer.drawText(
-                    'Coins: ' + score, 
-                    50, 
-                    50, 
-                    '14pt "Trebuchet MS", Helvetica, sans-serif', 
-                    '#FFFFFF',
-                    'left'
-                );
+            } else if (entity === speedBoost) {
+                powerupSound.play();
+                
+                if (window.speedBoostTimeout) {
+                    clearTimeout(window.speedBoostTimeout);
+                }
+                
+                if (!isSpeedBoosted) {
+                    originalVelocityX = player.velocity.x;
+                    originalVelocityY = player.velocity.y;
+                    player.velocity.x = 200;
+                    player.velocity.y = 200;
+                }
+                
+                isSpeedBoosted = true;
+                speedBoostTimer = 10;  
+                
+                speedBoost.pos = {
+                    x: Math.floor(Math.random() * (700 - 100 + 1) + 100),
+                    y: Math.floor(Math.random() * (500 - 100 + 1) + 100)
+                };
+                
+                window.speedBoostTimeout = setTimeout(function() {
+                    player.velocity.x = originalVelocityX;
+                    player.velocity.y = originalVelocityY;
+                    isSpeedBoosted = false;
+                    speedBoostTimer = 0;
+                }, 10000);
+            } else if (entity === shield) {
+                powerupSound.play();
+                
+                if (window.shieldTimeout) {
+                    clearTimeout(window.shieldTimeout);
+                }
+                
+                isShielded = true;
+                shieldTimer = 10;
+                
+                shield.pos = {
+                    x: Math.floor(Math.random() * (700 - 100 + 1) + 100),
+                    y: Math.floor(Math.random() * (500 - 100 + 1) + 100)
+                };
+                
+                window.shieldTimeout = setTimeout(function() {
+                    isShielded = false;
+                    shieldTimer = 0;
+                }, 10000);
+            } else if (iceBlocks.includes(entity)) { 
+                player.velocity.x = 25; 
+                player.velocity.y = 25; 
+                isOnIceBlock = true; 
+            } else if (enemies.includes(entity) && !isShielded) {
+                
+                
             }
         });
+
         
         playerLayer.registerCollidable(player);
         itemLayer.registerCollidable(coin);
+        powerupLayer.registerCollidable(speedBoost);
+        powerupLayer.registerCollidable(shield);
         
         var score = 0;
         var scoreLayer = game.createLayer("score");
+        var speedBoostTimer = 0;  
+        var isSpeedBoosted = false;  
         scoreLayer.static = true;
 
         enemyLayer.redraw = true;
+
+        
         
         game.loadAndRun(function (elapsedTime, dt) {
+
+            function isColliding(entityA, entityB) {
+                return (
+                    entityA.pos.x < entityB.pos.x + entityB.size.width &&
+                    entityA.pos.x + entityA.size.width > entityB.pos.x &&
+                    entityA.pos.y < entityB.pos.y + entityB.size.height &&
+                    entityA.pos.y + entityA.size.height > entityB.pos.y
+                );
+            }
 
             enemyLayer.redraw = true;
             enemyLayer.visible = true;
@@ -302,6 +462,67 @@ document.onreadystatechange = function () {
 
             enemyLayer.draw();
 
+            scoreLayer.redraw = true;
+            scoreLayer.drawText(
+                'Coins: ' + score, 
+                50, 
+                50, 
+                '14pt "Trebuchet MS", Helvetica, sans-serif', 
+                '#FFFFFF',
+                'left'
+            );
+
+            if (isSpeedBoosted) {
+                speedBoostTimer -= dt;  
+                
+                scoreLayer.redraw = true;
+                scoreLayer.drawText(
+                    'Speed Boost: ' + Math.ceil(speedBoostTimer) + 's', 
+                    160, 
+                    80, 
+                    '14pt "Trebuchet MS", Helvetica, sans-serif', 
+                    '#FFFF00',  
+                    'right'
+                );
+            }
+
+            if (isShielded) {
+                shieldTimer -= dt;
+                
+                scoreLayer.redraw = true;
+                scoreLayer.drawText(
+                    'Shield: ' + Math.ceil(shieldTimer) + 's', 
+                    125, 
+                    110, 
+                    '14pt "Trebuchet MS", Helvetica, sans-serif', 
+                    '#00FFFF',  
+                    'right'
+                );
+            }
+
+            iceBlockLayer.draw();
+
+            if (isOnIceBlock) {
+                let stillColliding = false;
+                for (let iceBlock of iceBlocks) {
+                    if (isColliding(player, iceBlock)) {
+                        stillColliding = true;
+                        break;
+                    }
+                }
+                if (!stillColliding) {
+                    player.velocity.x = originalPlayerSpeed;
+                    player.velocity.y = originalPlayerSpeed;
+                    isOnIceBlock = false; 
+                }
+            }
         });
-    }
-}
+
+    })
+    .catch(error => {
+        console.error('Error fetching weather:', error);
+        const temperature = 50;
+    });
+
+
+}}
