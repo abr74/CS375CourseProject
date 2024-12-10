@@ -5,6 +5,8 @@ CODE NINJAS - 2D PIXEL SURVIVOR GAME - CS 375 COURSE PROJECT
 1. Besides the general "npm" setup utilized in class for local hosting, be sure to have
 axios installed for the weather API to work smoothly:
 
+      npm install express
+
       npm install axios
 
 3. The main branch should have the latest functioning version
